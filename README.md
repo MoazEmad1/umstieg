@@ -1,6 +1,8 @@
 # umstieg
 
-In Berlin, a late S-Bahn or U-Bahn often means a missed connection, and you only find out on the platform. umstieg reads live VBB data, learns how delays develop, and will warn riders early when a connection is about to break, with a better alternative.
+umstieg estimates how likely a transfer between S-Bahn, U-Bahn, tram and bus in Berlin is to work, and publishes how accurate the VBB realtime forecasts really are.
+
+In Berlin, a late train often means a missed connection, and you only find out on the platform. umstieg reads live VBB data, learns how delays develop, and will warn riders early when a connection is about to break, with an alternative.
 
 ```mermaid
 flowchart LR
@@ -10,8 +12,8 @@ flowchart LR
 ```
 
 **Status**
-- Phase 1 (data in): in progress. Research, decisions and the build/infra skeleton are done.
-- Next: a raw snapshot collector, so history starts building.
+- Phase 1 (data in): in progress. The raw collector is built: it saves both VBB feeds, alerts on Telegram when one goes stale, and copies files to object storage.
+- It is not deployed on the VPS yet, so history hasn't started. Next: deploy it, then the forecast quality report.
 - Phases 2–4 (prediction, product, extras): not started.
 
 ## Run it
