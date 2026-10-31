@@ -22,6 +22,7 @@ Needs Docker and Java 21.
 make up     # starts Kafka + Postgres, waits until healthy
 make test   # ./gradlew build
 make collector  # polls the feed, writes to data/raw
+make sync       # copies data/raw to object storage
 make down
 ```
 

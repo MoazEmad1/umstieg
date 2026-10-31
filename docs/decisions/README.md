@@ -10,3 +10,4 @@ Short records of why things are the way they are. I don't add a new tool or serv
 - [0006](0006-archive-all-static-gtfs.md) Keep every static GTFS version
 - [0007](0007-grafana-for-charts.md) Grafana for charts
 - [0008](0008-staleness-alert.md) Alert when the feed goes stale
+- [0010](0010-rclone-archive-sync.md) Copy raw files to object storage with rclone
