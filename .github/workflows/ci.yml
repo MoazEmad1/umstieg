@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      # Also validates the checksum of gradle-wrapper.jar.
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew build
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Start stack and wait until healthy
+        run: |
+          cp .env.example .env
+          docker compose up -d --wait --wait-timeout 180
+      - name: Show service state
+        if: always()
+        run: docker compose ps
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - run: docker compose down -v
+        if: always()
