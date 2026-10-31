@@ -1,0 +1,56 @@
+package io.github.moazemad1.umstieg.collector;
+
+import java.net.http.HttpClient;
+import java.time.Clock;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import tools.jackson.databind.json.JsonMapper;
+
+@Configuration(proxyBeanMethods = false)
+class CollectorConfiguration {
+
+    @Bean
+    Clock clock() {
+        return Clock.systemUTC();
+    }
+
+    @Bean
+    FeedFetcher feedFetcher(CollectorProperties properties, Clock clock) {
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+        return new FeedFetcher(client, properties.userAgent(), clock);
+    }
+
+    @Bean
+    SnapshotWriter snapshotWriter(CollectorProperties properties) {
+        return new SnapshotWriter(properties.dataDir(), JsonMapper.builder().build());
+    }
+
+    @Bean
+    List<SourcePoller> sourcePollers(CollectorProperties properties, FreshnessProperties freshness,
+            FeedFetcher fetcher, SnapshotWriter writer, Clock clock) {
+        return properties.sources().stream()
+                .map(source -> new SourcePoller(source, fetcher, writer, new FreshnessTracker(freshness, clock.instant()), clock))
+                .toList();
+    }
+
+    @Bean(destroyMethod = "shutdownNow")
+    @ConditionalOnBooleanProperty(name = "collector.polling-enabled", matchIfMissing = true)
+    ScheduledExecutorService pollingExecutor(List<SourcePoller> pollers) {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(pollers.size());
+        for (SourcePoller poller : pollers) {
+            executor.scheduleAtFixedRate(poller, 0, poller.source().interval().toMillis(), TimeUnit.MILLISECONDS);
+        }
+        return executor;
+    }
+}

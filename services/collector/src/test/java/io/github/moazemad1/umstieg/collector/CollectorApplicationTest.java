@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(properties = "collector.user-agent=test-agent")
+@SpringBootTest(properties = {"collector.user-agent=test-agent", "collector.polling-enabled=false"})
 class CollectorApplicationTest {
 
     @Autowired
