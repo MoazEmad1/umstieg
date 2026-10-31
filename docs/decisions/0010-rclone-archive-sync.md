@@ -18,4 +18,4 @@ The collector writes about 2.2 GB of raw files a day on a small VPS. The disk fi
 - Upload from the collector itself: more Java code and a new dependency for something a standard tool does.
 
 ## Consequences
-Bucket storage grows by about 66 GB a month, which fits in the base price for over a year. If a sync fails, nothing tells me yet. The VPS keeps a week of files, so I have that long to notice.
+Bucket storage grows by about 66 GB a month, which fits in the base price for over a year. On the VPS a systemd timer runs it, and a failed run sends a Telegram message. The VPS keeps a week of files, so I have that long to fix a broken sync.
