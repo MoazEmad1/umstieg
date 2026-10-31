@@ -45,6 +45,7 @@ services:
       retries: 30
 
   collector:
+    image: ghcr.io/moazemad1/umstieg-collector:${COLLECTOR_TAG:-latest}
     build:
       context: .
       dockerfile: services/collector/Dockerfile

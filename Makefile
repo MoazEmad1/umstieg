@@ -1,4 +1,4 @@
-.PHONY: up down clean logs test collector sync
+.PHONY: up down clean logs test collector collector-pull sync
 
 up: .env
 	docker compose up -d --wait
@@ -18,6 +18,11 @@ test:
 collector: .env
 	mkdir -p data/raw
 	docker compose --profile collector up -d --build collector
+
+collector-pull: .env
+	mkdir -p data/raw
+	docker compose --profile collector pull collector
+	docker compose --profile collector up -d --no-build collector
 
 sync: .env
 	docker compose --profile sync run --rm sync
