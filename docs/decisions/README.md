@@ -11,4 +11,5 @@ Short records of why things are the way they are. I don't add a new tool or serv
 - [0007](0007-grafana-for-charts.md) Grafana for charts
 - [0008](0008-staleness-alert.md) Alert when the feed goes stale
 - [0009](0009-project-positioning.md) What umstieg is for
-- [0010](0010-rclone-archive-sync.md) Copy raw files to object storage with rclone
+- [0010](0010-rclone-archive-sync.md) Copy raw files to object storage with rclone (superseded by 0011)
+- [0011](0011-free-hosting-azure-hugging-face.md) Free hosting with Azure for Students and Hugging Face

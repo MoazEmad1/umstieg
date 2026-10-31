@@ -1,6 +1,6 @@
 # 0010: Copy raw files to object storage with rclone
 
-Status: Accepted · 2026-10-31
+Status: Superseded by [0011](0011-free-hosting-azure-hugging-face.md) · 2026-10-31
 
 ## Context
 The collector writes about 2.2 GB of raw files a day on a small VPS. The disk fills up in a few weeks, and if the VPS dies, the files are gone. They are the only copy of history I can't download again (0003).
