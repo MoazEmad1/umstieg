@@ -17,7 +17,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      # Also validates the checksum of gradle-wrapper.jar.
       - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew build
 

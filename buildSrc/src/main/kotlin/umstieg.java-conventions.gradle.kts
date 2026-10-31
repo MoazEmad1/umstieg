@@ -1,4 +1,3 @@
-// Shared setup for every Java module: Java 21, JUnit 5, compiler warnings on.
 plugins {
     java
 }
