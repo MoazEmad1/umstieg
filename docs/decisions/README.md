@@ -9,4 +9,4 @@ Short records of why things are the way they are. I don't add a new tool or serv
 - [0005](0005-postgres-change-log-storage.md) Store changes, not every poll
 - [0006](0006-archive-all-static-gtfs.md) Keep every static GTFS version
 - [0007](0007-grafana-for-charts.md) Grafana for charts
-- [0008](0008-staleness-alert.md) Alert when the feed goes stale (proposed)
+- [0008](0008-staleness-alert.md) Alert when the feed goes stale

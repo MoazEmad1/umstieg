@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 @Configuration(proxyBeanMethods = false)
 class CollectorConfiguration {
+
+    private static final Logger log = LoggerFactory.getLogger(CollectorConfiguration.class);
 
     @Bean
     Clock clock() {
@@ -37,10 +41,21 @@ class CollectorConfiguration {
     }
 
     @Bean
+    Notifier notifier(TelegramProperties telegram) {
+        if (!telegram.enabled()) {
+            log.info("Telegram alerts disabled: collector.telegram.bot-token or chat-id not set");
+            return Notifier.NONE;
+        }
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+        return new TelegramNotifier(client, telegram, JsonMapper.builder().build());
+    }
+
+    @Bean
     List<SourcePoller> sourcePollers(CollectorProperties properties, FreshnessProperties freshness,
-            FeedFetcher fetcher, SnapshotWriter writer, Clock clock) {
+            FeedFetcher fetcher, SnapshotWriter writer, Notifier notifier, Clock clock) {
         return properties.sources().stream()
-                .map(source -> new SourcePoller(source, fetcher, writer, new FreshnessTracker(freshness, clock.instant()), clock))
+                .map(source -> new SourcePoller(source, fetcher, writer,
+                        new FreshnessTracker(freshness, clock.instant()), notifier, clock))
                 .toList();
     }
 

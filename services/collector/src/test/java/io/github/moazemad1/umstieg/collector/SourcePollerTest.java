@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -85,12 +87,46 @@ class SourcePollerTest {
         assertThat(json.readTree(sidecars.get(0).toFile()).get("error").asString()).isNotBlank();
     }
 
+    @Test
+    void staleIsSentOnce() {
+        List<String> messages = new ArrayList<>();
+        SourcePoller down = pollerFor(URI.create("http://127.0.0.1:1/data"), Duration.ZERO, messages::add);
+
+        down.run();
+        down.run();
+
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0)).contains("test is stale");
+    }
+
+    @Test
+    void recoveryIsSent() {
+        List<String> messages = new ArrayList<>();
+        Clock clock = Clock.systemUTC();
+        var tracker = new FreshnessTracker(new FreshnessProperties(Duration.ofMinutes(5), Duration.ofMinutes(15)),
+                clock.instant().minus(Duration.ofMinutes(20)));
+        tracker.record(clock.instant(), Optional.empty(), 0);
+        var source = new Source("test", URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/data"), Duration.ofSeconds(60));
+        var poller = new SourcePoller(source, fetcher(), new SnapshotWriter(dataDir, json), tracker, messages::add, clock);
+
+        poller.run();
+
+        assertThat(messages).singleElement().asString().contains("test recovered");
+    }
+
     private SourcePoller pollerFor(URI url) {
+        return pollerFor(url, Duration.ofMinutes(15), Notifier.NONE);
+    }
+
+    private SourcePoller pollerFor(URI url, Duration staleAfter, Notifier notifier) {
         Clock clock = Clock.systemUTC();
         var source = new Source("test", url, Duration.ofSeconds(60));
-        var fetcher = new FeedFetcher(HttpClient.newHttpClient(), "umstieg-test", clock);
-        var freshness = new FreshnessTracker(new FreshnessProperties(Duration.ofMinutes(5), Duration.ofMinutes(15)), clock.instant());
-        return new SourcePoller(source, fetcher, new SnapshotWriter(dataDir, json), freshness, clock);
+        var freshness = new FreshnessTracker(new FreshnessProperties(Duration.ofMinutes(5), staleAfter), clock.instant());
+        return new SourcePoller(source, fetcher(), new SnapshotWriter(dataDir, json), freshness, notifier, clock);
+    }
+
+    private FeedFetcher fetcher() {
+        return new FeedFetcher(HttpClient.newHttpClient(), "umstieg-test", Clock.systemUTC());
     }
 
     private List<Path> files(String suffix) throws IOException {

@@ -19,16 +19,19 @@ public class SourcePoller implements Runnable {
     private final FeedFetcher fetcher;
     private final SnapshotWriter writer;
     private final FreshnessTracker freshness;
+    private final Notifier notifier;
     private final Clock clock;
 
     private Optional<String> lastEtag = Optional.empty();
     private FeedSummary lastContent = FeedSummary.NONE;
 
-    public SourcePoller(Source source, FeedFetcher fetcher, SnapshotWriter writer, FreshnessTracker freshness, Clock clock) {
+    public SourcePoller(Source source, FeedFetcher fetcher, SnapshotWriter writer, FreshnessTracker freshness,
+            Notifier notifier, Clock clock) {
         this.source = source;
         this.fetcher = fetcher;
         this.writer = writer;
         this.freshness = freshness;
+        this.notifier = notifier;
         this.clock = clock;
     }
 
@@ -65,8 +68,14 @@ public class SourcePoller implements Runnable {
         Instant now = clock.instant();
         Transition transition = freshness.record(now, lastContent.feedTimestamp(), lastContent.entityCount());
         switch (transition) {
-            case WENT_STALE -> log.warn("{} is STALE: no fresh snapshot since {}", source.name(), freshness.lastFreshAt());
-            case RECOVERED -> log.info("{} recovered", source.name());
+            case WENT_STALE -> {
+                log.warn("{} is STALE: no fresh snapshot since {}", source.name(), freshness.lastFreshAt());
+                notifier.send("umstieg: " + source.name() + " is stale, no fresh snapshot since " + freshness.lastFreshAt());
+            }
+            case RECOVERED -> {
+                log.info("{} recovered", source.name());
+                notifier.send("umstieg: " + source.name() + " recovered at " + now);
+            }
             case NONE -> { }
         }
     }

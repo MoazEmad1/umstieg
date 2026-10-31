@@ -12,3 +12,6 @@ collector:
     - name: production
       url: https://production.gtfsrt.vbb.de/data
       interval: 60s
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    chat-id: ${TELEGRAM_CHAT_ID:}

@@ -51,6 +51,8 @@ services:
     profiles: [collector]
     environment:
       FEED_USER_AGENT: ${FEED_USER_AGENT:?set FEED_USER_AGENT in .env}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
     volumes:
       - ./data/raw:/data/raw
     restart: unless-stopped
