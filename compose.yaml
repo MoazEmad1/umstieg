@@ -44,6 +44,21 @@ services:
       timeout: 10s
       retries: 30
 
+  collector:
+    build:
+      context: .
+      dockerfile: services/collector/Dockerfile
+    profiles: [collector]
+    environment:
+      FEED_USER_AGENT: ${FEED_USER_AGENT:?set FEED_USER_AGENT in .env}
+    volumes:
+      - ./data/raw:/data/raw
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: "5"
+
 volumes:
   pgdata:
   kafkadata:

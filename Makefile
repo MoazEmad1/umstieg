@@ -1,4 +1,4 @@
-.PHONY: up down clean logs test
+.PHONY: up down clean logs test collector
 
 up: .env
 	docker compose up -d --wait
@@ -14,6 +14,10 @@ logs:
 
 test:
 	./gradlew build
+
+collector: .env
+	mkdir -p data/raw
+	docker compose --profile collector up -d --build collector
 
 .env:
 	cp .env.example .env

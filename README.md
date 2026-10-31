@@ -21,6 +21,7 @@ Needs Docker and Java 21.
 ```bash
 make up     # starts Kafka + Postgres, waits until healthy
 make test   # ./gradlew build
+make collector  # polls the feed, writes to data/raw
 make down
 ```
 
