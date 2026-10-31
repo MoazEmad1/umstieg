@@ -48,6 +48,8 @@ The docs don't mention platform changes. They might show up as a different `stop
 
 This is the biggest risk. On 2026-10-30 at 18:07 UTC, production returned HTTP 200 with a 35-byte body: a header with no trips, 5.5 hours old. That was after a maintenance window announced for 12:30–13:30 CET the same day. Staging was fine.
 
+On 2026-10-31 at 10:58 UTC production was back: about 6,900 trips per snapshot, 1.43 MB gzip, header 1–2 s old. Staging had about 2,200 trips at the same time. I don't know yet whether the June problem is fixed for good.
+
 The Atom feed lists earlier problems:
 - 2025-11-06: DB-operated trips possibly missing during DB maintenance.
 - 2026-02-05: maintenance on the source.

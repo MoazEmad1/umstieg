@@ -7,8 +7,8 @@ VBB runs an open GTFS-RT feed for the whole network: CC BY 4.0, no key, 7 reques
 
 ## Decision
 - This feed is the only realtime source in Phase 1.
-- I collect from staging, and I also poll production once a minute to see when it recovers. Every stored record has a `source` field.
-- I stay well under the limit: at most 4 requests per minute to staging.
+- I poll production every minute and staging every 5 minutes. Every stored record has a `source` field.
+- Update 2026-10-31: production was back with about 6,900 trips per snapshot, against about 2,200 on staging. So production became the main source, and staging stays as a cross-check.
 - Every request sends a User-Agent with a contact email, gzip and the last ETag. The email lives only in `.env`.
 - I ingest the whole VBB network and filter later in queries.
 
@@ -17,4 +17,4 @@ VBB runs an open GTFS-RT feed for the whole network: CC BY 4.0, no key, 7 reques
 - VBB's REST API: needs an access request and works per stop or trip. Maybe for Phase 3.
 
 ## Consequences
-Staging is meant "for tests", so I'm asking the maintainer whether collecting from it is OK. If not, switching to production is a config change. Feed outages show up as gaps, which get recorded (0005) and alerted on (0008).
+Staging is meant "for tests". At one request every 5 minutes it costs little, and I can drop it with a config change. Feed outages show up as gaps, which get recorded (0005) and alerted on (0008).

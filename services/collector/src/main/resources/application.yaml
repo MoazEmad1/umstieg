@@ -8,7 +8,7 @@ collector:
   sources:
     - name: staging
       url: https://staging.gtfsrt.vbb.de/data
-      interval: 60s
+      interval: 5m
     - name: production
       url: https://production.gtfsrt.vbb.de/data
       interval: 60s
