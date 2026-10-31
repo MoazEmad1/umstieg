@@ -1,3 +1,10 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "umstieg"
 
 dependencyResolutionManagement {
@@ -5,3 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
+include("collector")
+project(":collector").projectDir = file("services/collector")
