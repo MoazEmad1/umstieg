@@ -12,7 +12,7 @@ flowchart LR
 ```
 
 **Status**
-- Phase 1 (data in): in progress. The raw collector is built: it saves both VBB feeds, alerts on Telegram when one goes stale, and copies files to object storage.
+- Phase 1 (data in): in progress. The raw collector is built: it saves both VBB feeds, alerts on Telegram when one goes stale, and packs each day into one archive for a public Hugging Face dataset.
 - It is not deployed on the VPS yet, so history hasn't started. Next: deploy it, then the forecast quality report.
 - Phases 2–4 (prediction, product, extras): not started.
 
@@ -26,7 +26,6 @@ make test   # ./gradlew build
 make collector  # polls the feed, writes to data/raw
 make pack       # packs yesterday into data/archive
 make upload     # uploads archives to Hugging Face, then removes them locally
-make sync       # copies data/raw to object storage
 make down
 ```
 

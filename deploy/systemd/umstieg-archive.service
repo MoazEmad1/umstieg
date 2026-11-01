@@ -1,0 +1,14 @@
+[Unit]
+Description=Pack yesterday's umstieg snapshots and upload them to Hugging Face
+Wants=network-online.target
+After=network-online.target docker.service
+OnFailure=umstieg-archive-failed.service
+
+[Service]
+Type=oneshot
+User=umstieg
+WorkingDirectory=/home/umstieg/umstieg
+TimeoutStartSec=6h
+ExecStartPre=/usr/bin/mkdir -p data/archive
+ExecStart=/usr/bin/docker compose --profile pack run --rm pack
+ExecStart=/usr/bin/docker compose --profile upload run --rm --build upload

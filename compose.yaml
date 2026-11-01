@@ -87,28 +87,6 @@ services:
       - ./data/raw:/data/raw
       - ./data/archive:/data/archive
 
-  sync:
-    image: rclone/rclone:1.75.2
-    profiles: [sync]
-    environment:
-      RCLONE_CONFIG_ARCHIVE_TYPE: s3
-      RCLONE_CONFIG_ARCHIVE_PROVIDER: ${ARCHIVE_PROVIDER:-Hetzner}
-      RCLONE_CONFIG_ARCHIVE_REGION: ${ARCHIVE_REGION:-fsn1}
-      RCLONE_CONFIG_ARCHIVE_ENDPOINT: ${ARCHIVE_ENDPOINT:-https://fsn1.your-objectstorage.com}
-      RCLONE_CONFIG_ARCHIVE_ACCESS_KEY_ID: ${ARCHIVE_ACCESS_KEY_ID:-}
-      RCLONE_CONFIG_ARCHIVE_SECRET_ACCESS_KEY: ${ARCHIVE_SECRET_ACCESS_KEY:-}
-      ARCHIVE_BUCKET: ${ARCHIVE_BUCKET:-}
-      ARCHIVE_KEEP_LOCAL: ${ARCHIVE_KEEP_LOCAL:-168h}
-    volumes:
-      - ./data/raw:/data/raw
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        set -e
-        test -n "$$ARCHIVE_BUCKET"
-        rclone copy /data/raw "archive:$$ARCHIVE_BUCKET/raw" --immutable --min-age 5m --exclude "*.tmp" --stats-one-line -v
-        rclone move /data/raw "archive:$$ARCHIVE_BUCKET/raw" --immutable --min-age "$$ARCHIVE_KEEP_LOCAL" --exclude "*.tmp" --stats-one-line -v
-
 volumes:
   pgdata:
   kafkadata:

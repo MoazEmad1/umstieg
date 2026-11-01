@@ -1,4 +1,4 @@
-.PHONY: up down clean logs test collector collector-pull pack upload sync
+.PHONY: up down clean logs test collector collector-pull pack upload
 
 up: .env
 	docker compose up -d --wait
@@ -32,9 +32,6 @@ pack: .env
 
 upload: .env
 	docker compose --profile upload run --rm --build upload
-
-sync: .env
-	docker compose --profile sync run --rm sync
 
 .env:
 	cp .env.example .env
