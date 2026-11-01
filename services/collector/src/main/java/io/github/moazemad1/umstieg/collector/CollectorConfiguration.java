@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -57,6 +58,13 @@ class CollectorConfiguration {
                 .map(source -> new SourcePoller(source, fetcher, writer,
                         new FreshnessTracker(freshness, clock.instant()), notifier, clock))
                 .toList();
+    }
+
+    @Bean
+    @ConditionalOnProperty("collector.pack.date")
+    PackRunner packRunner(CollectorProperties properties, PackProperties pack, Clock clock) {
+        var packer = new DayPacker(properties.dataDir(), pack, JsonMapper.builder().build());
+        return new PackRunner(packer, properties, pack, clock);
     }
 
     @Bean(destroyMethod = "shutdownNow")

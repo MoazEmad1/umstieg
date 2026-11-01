@@ -8,6 +8,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-jackson")
     implementation(libs.gtfs.realtime.bindings)
+    implementation(libs.commons.compress)
+    implementation(libs.zstd.jni)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

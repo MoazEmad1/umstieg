@@ -2,11 +2,15 @@
 spring-boot = "4.1.2"
 testcontainers = "2.0.5"
 gtfs-realtime-bindings = "0.2.0"
+commons-compress = "1.28.0"
+zstd-jni = "1.5.7-25"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 gtfs-realtime-bindings = { module = "org.mobilitydata:gtfs-realtime-bindings", version.ref = "gtfs-realtime-bindings" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commons-compress" }
+zstd-jni = { module = "com.github.luben:zstd-jni", version.ref = "zstd-jni" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

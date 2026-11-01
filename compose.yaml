@@ -62,6 +62,20 @@ services:
         max-size: 10m
         max-file: "5"
 
+  pack:
+    image: ghcr.io/moazemad1/umstieg-collector:${COLLECTOR_TAG:-latest}
+    profiles: [pack]
+    environment:
+      FEED_USER_AGENT: ${FEED_USER_AGENT:?set FEED_USER_AGENT in .env}
+      JAVA_TOOL_OPTIONS: -Xmx256m
+    volumes:
+      - ./data/raw:/data/raw
+      - ./data/archive:/data/archive
+    command:
+      - --collector.polling-enabled=false
+      - --collector.pack.date=${PACK_DATE:-yesterday}
+      - --collector.pack.archive-dir=/data/archive
+
   sync:
     image: rclone/rclone:1.75.2
     profiles: [sync]

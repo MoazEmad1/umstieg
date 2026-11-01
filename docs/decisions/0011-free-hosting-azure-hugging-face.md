@@ -10,7 +10,7 @@ On 2026-10-31 I fetched 10 production snapshots one minute apart. As single gzip
 ## Decision
 - The collector runs on an Azure for Students VM (sign-up with a uni email, no card, $100 credit for 12 months, a small B-series VM listed as free).
 - It keeps writing `.pb.gz` files and sidecars as before (0003).
-- Once a night, the previous UTC day of each source is packed into one `{source}-{date}.tar.zst` with a manifest of names, sizes and sha256 hashes. The archive is unpacked and checked against the manifest before anything is deleted.
+- Once a night, the previous UTC day of each source is packed into one `{source}-{date}.tar.zst` with a manifest of names, sizes and sha256 hashes. The archive is unpacked and checked against the manifest before anything is deleted. Packing runs inside the collector, using commons-compress for tar and zstd-jni for zstd.
 - The archives go to a public Hugging Face dataset. VBB data is CC BY 4.0, so sharing it is allowed as long as VBB is credited in the dataset card.
 - Local files are removed only after the upload is confirmed.
 - CI builds the images and pushes them to GitHub's container registry, because the free VM has little memory for a Gradle build.
