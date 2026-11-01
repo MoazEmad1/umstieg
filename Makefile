@@ -1,4 +1,4 @@
-.PHONY: up down clean logs test collector collector-pull pack upload
+.PHONY: up down clean logs test collector collector-pull pack upload download analyse
 
 up: .env
 	docker compose up -d --wait
@@ -32,6 +32,16 @@ pack: .env
 
 upload: .env
 	docker compose --profile upload run --rm --build upload
+
+download: .env
+	test -n "$(DAY)"
+	mkdir -p data/download
+	docker compose --profile upload run --rm --build -v ./data/download:/data/download --entrypoint sh upload \
+		-c 'hf download "$$HF_DATASET" --repo-type dataset --include "*/*-$(DAY).*" --local-dir /data/download'
+
+analyse: .env
+	test -n "$(ARCHIVE)"
+	ARCHIVE=$(ARCHIVE) docker compose --profile analyse run --rm analyse
 
 .env:
 	cp .env.example .env

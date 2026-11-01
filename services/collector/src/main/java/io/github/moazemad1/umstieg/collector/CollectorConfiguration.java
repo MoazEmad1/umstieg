@@ -1,6 +1,7 @@
 package io.github.moazemad1.umstieg.collector;
 
 import java.net.http.HttpClient;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -65,6 +67,12 @@ class CollectorConfiguration {
     PackRunner packRunner(CollectorProperties properties, PackProperties pack, Clock clock) {
         var packer = new DayPacker(properties.dataDir(), pack, JsonMapper.builder().build());
         return new PackRunner(packer, properties, pack, clock);
+    }
+
+    @Bean
+    @ConditionalOnProperty("collector.analyse.archive")
+    AnalyseRunner analyseRunner(@Value("${collector.analyse.archive}") Path archive) {
+        return new AnalyseRunner(archive);
     }
 
     @Bean(destroyMethod = "shutdownNow")

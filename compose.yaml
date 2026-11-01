@@ -77,6 +77,18 @@ services:
       - --collector.pack.date=${PACK_DATE:-yesterday}
       - --collector.pack.archive-dir=/data/archive
 
+  analyse:
+    image: ghcr.io/moazemad1/umstieg-collector:${COLLECTOR_TAG:-latest}
+    profiles: [analyse]
+    environment:
+      FEED_USER_AGENT: ${FEED_USER_AGENT:?set FEED_USER_AGENT in .env}
+      JAVA_TOOL_OPTIONS: -Xmx2g
+    volumes:
+      - ./data:/data
+    command:
+      - --collector.polling-enabled=false
+      - --collector.analyse.archive=/data/${ARCHIVE:-}
+
   upload:
     build: services/upload
     image: umstieg-upload

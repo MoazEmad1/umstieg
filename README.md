@@ -26,6 +26,8 @@ make test   # ./gradlew build
 make collector  # polls the feed, writes to data/raw
 make pack       # packs yesterday into data/archive
 make upload     # uploads archives to Hugging Face, then removes them locally
+make download DAY=2026-11-02
+make analyse ARCHIVE=download/production/2026/production-2026-11-02.tar.zst
 make down
 ```
 
