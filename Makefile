@@ -1,4 +1,4 @@
-.PHONY: up down clean logs test collector collector-pull pack sync
+.PHONY: up down clean logs test collector collector-pull pack upload sync
 
 up: .env
 	docker compose up -d --wait
@@ -14,6 +14,8 @@ logs:
 
 test:
 	./gradlew build
+	docker build -q -t umstieg-upload services/upload
+	docker run --rm --entrypoint sh -v "$(CURDIR)/services/upload:/t:ro" umstieg-upload /t/test.sh
 
 collector: .env
 	mkdir -p data/raw
@@ -27,6 +29,9 @@ collector-pull: .env
 pack: .env
 	mkdir -p data/archive
 	docker compose --profile pack run --rm pack
+
+upload: .env
+	docker compose --profile upload run --rm --build upload
 
 sync: .env
 	docker compose --profile sync run --rm sync

@@ -20,6 +20,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew build
 
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t umstieg-upload services/upload
+      - run: docker run --rm --entrypoint sh -v "$PWD/services/upload:/t:ro" umstieg-upload /t/test.sh
+
   compose:
     runs-on: ubuntu-latest
     steps:

@@ -25,6 +25,7 @@ make up     # starts Kafka + Postgres, waits until healthy
 make test   # ./gradlew build
 make collector  # polls the feed, writes to data/raw
 make pack       # packs yesterday into data/archive
+make upload     # uploads archives to Hugging Face, then removes them locally
 make sync       # copies data/raw to object storage
 make down
 ```

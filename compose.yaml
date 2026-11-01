@@ -76,6 +76,17 @@ services:
       - --collector.pack.date=${PACK_DATE:-yesterday}
       - --collector.pack.archive-dir=/data/archive
 
+  upload:
+    build: services/upload
+    image: umstieg-upload
+    profiles: [upload]
+    environment:
+      HF_DATASET: ${HF_DATASET:-}
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - ./data/raw:/data/raw
+      - ./data/archive:/data/archive
+
   sync:
     image: rclone/rclone:1.75.2
     profiles: [sync]
