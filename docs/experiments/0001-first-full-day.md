@@ -1,6 +1,6 @@
 # 0001: What the feed looks like over one full day
 
-Status: predictions written · 2026-11-01. No analysis done yet.
+Status: predictions written · 2026-11-01. Results added 2026-11-03.
 
 ## Why
 
@@ -57,4 +57,32 @@ Every prediction is judged right or wrong by the thresholds written here. If one
 
 ## Results
 
-Not done yet.
+I ran `make analyse` on 2026-11-03 on both archives from Hugging Face. Before that I had already seen part of the day: the stale alerts on Telegram, the collector log from 01:40 to 02:05 UTC, and the packing log for 1 November. So P4–P6 didn't surprise me. The thresholds are the ones above, unchanged.
+
+Production, 1,440 polls:
+- P1 right. 99.97% of 34.2 million observations of passed stops were still in the feed.
+- P1 extra wrong. 11.56% of 1.3 million settled stops still changed more than 10 minutes after departure.
+- P2 right. None of the 12.0 million TripUpdates was missing `start_date`.
+- P3 right. 1.25% of 237 million stop updates had no `stop_sequence`.
+- P4 wrong. 89.79% of polls returned 200 with trips. No poll failed.
+- P5 wrong. 9.72% were 304.
+- P6 wrong. 8.33% were stale, the longest gap was 25 minutes, and the alert fired.
+- P7 wrong. 2.64 GB as received, and the archive (63.9 MB) is 41.3 times smaller. Staging was 0.18 GB, which is right.
+- P8 right. The nightly run took 23 min 45 s: 3 min for staging, 18 min for production, 2.5 min for the upload. The kernel log has no out-of-memory kills.
+
+Four of eight right, and the extra part of P1 was wrong too. For P7 I used the `bytes` field of the sidecars, which is the size of the `.pb.gz` files.
+
+## Why the wrong ones were wrong
+
+P4, P5 and P6 have one cause. Production stopped updating seven times, all between 19:57 and 02:00 UTC. Each time looks the same: the server answers 304 for about nine minutes, then switches to an empty feed (35 bytes, no trips, header from 2026-10-30 19:04:09 UTC) and answers 304 to that, until normal data comes back after 14 to 30 minutes. From 02:00 to 19:57 UTC every poll was fine. The 147 polls in those gaps are exactly what P4 is missing. I wrote the predictions from log lines I had looked at in the daytime and never watched the feed at night. The empty feed I saw on 2026-10-30 should have made me more careful.
+
+P7: I took the snapshot size from a Saturday morning (1.43 MB). 2 November was a Monday, and snapshots averaged about 2 MB. The compression ratio came from only ten snapshots. A whole day compresses much better, because the long zstd window finds the same trips again hours later. The archive size itself is inside the 60–250 MB I wrote down, but only because both numbers were off.
+
+P1 extra: I don't know yet. The 11.56% says how often a settled stop still changes, not by how much. If most changes are seconds, the last value is still close to the real time. If they are minutes, it isn't.
+
+## What this changes
+
+- Passed stops are kept, so the last value seen is a candidate for the real delay. Before I use it as a label in Phase 2, I measure how far settled stops still move.
+- The night gaps come from the feed, not from my code. Everything downstream has to treat an empty or old snapshot as "no information", never as "all trips ended".
+- Volume is about 64 MB a day for production on a weekday and 23 MB for staging, roughly 30 GB a year.
+- The 15-minute alert fires several times a night. That's correct, but noisy. I'll decide what to do about it after a week of data.

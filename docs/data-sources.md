@@ -57,6 +57,8 @@ The Atom feed lists earlier problems:
 - 2026-03-10: source offline, no ETA.
 - 2026-06-04: "lacking some data", no ETA, and no fix announced since.
 
+On 2026-11-02 production stopped updating seven times, all between 19:57 and 02:00 UTC, for 14 to 30 minutes each. The server first answers 304, then serves an empty 35-byte feed with a header from 2026-10-30 19:04:09 UTC until normal data returns. Details are in [experiment 0001](experiments/0001-first-full-day.md).
+
 So the collector has to notice empty or stale snapshots and record them (ADR 0005), and alert me (ADR 0008). Gaps in the data stay gaps; they must never be read as "no delay".
 
 ## Alternatives I'm not using yet
@@ -77,8 +79,8 @@ Both sources I use in Phase 1 are CC BY 4.0. A public repo, a blog post and a da
 
 1. Is production coming back, and is long-term collection from staging OK? I'm asking the maintainer.
 2. How are platform changes represented, if at all?
-3. Does the feed keep updates for stops a trip has already passed, or drop them? If it drops them, the last value I see is a late prediction, not the real delay. I'll measure this in the first 24 hours.
-4. How often are `start_date` and `stop_sequence` missing? Both are optional in GTFS-RT.
+3. Does the feed keep updates for stops a trip has already passed, or drop them? Measured on 2026-11-02: it keeps them, but 11.6% of them still change more than 10 minutes after departure. Next I need to know by how much.
+4. How often are `start_date` and `stop_sequence` missing? Measured on 2026-11-02: `start_date` never, `stop_sequence` in 1.25% of stop updates.
 5. Which static version are realtime trip IDs matched against at a given moment? I assume the current one.
 6. How big is the static GTFS unpacked, and how many rows does each table have?
 
