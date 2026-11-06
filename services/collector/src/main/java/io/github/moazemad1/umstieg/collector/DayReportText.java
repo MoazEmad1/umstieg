@@ -2,6 +2,7 @@ package io.github.moazemad1.umstieg.collector;
 
 import java.util.Locale;
 
+import io.github.moazemad1.umstieg.collector.DayAnalysis.Moves;
 import io.github.moazemad1.umstieg.collector.DayAnalysis.Report;
 
 public final class DayReportText {
@@ -26,6 +27,7 @@ public final class DayReportText {
             return out.toString();
         }
 
+        line(out, "Experiment 0001:");
         double kept = r.share(r.passedKept(), r.passedObservations());
         String p1 = kept >= 0.90 ? "kept" : kept <= 0.10 ? "dropped" : "mixed";
         line(out, "- P1 passed stops: %s of %d observations still present -> %s -> %s",
@@ -54,7 +56,33 @@ public final class DayReportText {
         line(out, "- P7 production %.2f GB as received, archive %.1fx smaller -> %s",
                 r.receivedBytes() / 1e9, ratio, verdict(sizeOk && ratio >= 8 && ratio <= 20));
         line(out, "- P8 packing time: read from journalctl, not from the archive");
+        line(out, "");
+        moves(out, r);
         return out.toString();
+    }
+
+    private static void moves(StringBuilder out, Report r) {
+        Moves m = r.moves();
+        line(out, "Experiment 0002:");
+        double moved = r.share(m.moved(), m.settledStops());
+        line(out, "- P1 settled stops that moved: %s of %d -> %s",
+                pct(moved), m.settledStops(), verdict(m.settledStops() > 0 && moved >= 0.08 && moved <= 0.15));
+        double small = r.share(m.withinMinute(), m.settledStops());
+        line(out, "- P2 settled stops that moved less than 60 s: %s -> %s",
+                pct(small), verdict(m.settledStops() > 0 && small >= 0.90));
+        double later = r.share(m.movedLater(), m.moved());
+        line(out, "- P3 moves that went later: %s of %d -> %s",
+                pct(later), m.moved(), verdict(m.moved() > 0 && later >= 0.80));
+        double close = r.share(m.departureClose(), m.departureStops());
+        line(out, "- P4 last value within 2 min of the value at departure: %s of %d -> %s",
+                pct(close), m.departureStops(), verdict(m.departureStops() > 0 && close >= 0.85));
+        line(out, "- Moves later by size: %s", sizes(m.laterBySize()));
+        line(out, "- Moves earlier by size: %s", sizes(m.earlierBySize()));
+    }
+
+    private static String sizes(long[] counts) {
+        return String.format(Locale.ROOT, "under 1 min %d, 1-2 min %d, 2-5 min %d, 5-15 min %d, over 15 min %d",
+                counts[0], counts[1], counts[2], counts[3], counts[4]);
     }
 
     private static String pct(double share) {

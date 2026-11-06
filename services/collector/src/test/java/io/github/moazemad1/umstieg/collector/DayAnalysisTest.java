@@ -81,6 +81,58 @@ class DayAnalysisTest {
     }
 
     @Test
+    void settledStopPushedLaterIsCountedBySize() {
+        var analysis = new DayAnalysis();
+        for (int minute = 0; minute < 25; minute++) {
+            Instant now = START.plus(Duration.ofMinutes(minute));
+            Instant departure = minute < 15 ? START : START.plusSeconds(420);
+            analysis.accept(ok(now, trip("t1", "20261102", stop(1, departure))));
+        }
+
+        var moves = analysis.report().moves();
+
+        assertThat(moves.settledStops()).isEqualTo(1);
+        assertThat(moves.moved()).isEqualTo(1);
+        assertThat(moves.movedLater()).isEqualTo(1);
+        assertThat(moves.withinMinute()).isZero();
+        assertThat(moves.laterBySize()).containsExactly(0, 0, 0, 1, 0);
+        assertThat(moves.departureStops()).isEqualTo(1);
+        assertThat(moves.departureClose()).isZero();
+    }
+
+    @Test
+    void smallEarlierCorrectionStaysCloseToDeparture() {
+        var analysis = new DayAnalysis();
+        for (int minute = 0; minute < 25; minute++) {
+            Instant now = START.plus(Duration.ofMinutes(minute));
+            Instant departure = minute < 12 ? START : START.minusSeconds(20);
+            analysis.accept(ok(now, trip("t1", "20261102", stop(1, departure))));
+        }
+
+        var moves = analysis.report().moves();
+
+        assertThat(moves.moved()).isEqualTo(1);
+        assertThat(moves.movedLater()).isZero();
+        assertThat(moves.withinMinute()).isEqualTo(1);
+        assertThat(moves.earlierBySize()).containsExactly(1, 0, 0, 0, 0);
+        assertThat(moves.departureClose()).isEqualTo(1);
+    }
+
+    @Test
+    void stopThatNeverMovesCountsAsSettledWithoutMove() {
+        var analysis = new DayAnalysis();
+        for (int minute = 0; minute < 25; minute++) {
+            analysis.accept(ok(START.plus(Duration.ofMinutes(minute)), trip("t1", "20261102", stop(1, START))));
+        }
+
+        var moves = analysis.report().moves();
+
+        assertThat(moves.settledStops()).isEqualTo(1);
+        assertThat(moves.moved()).isZero();
+        assertThat(moves.withinMinute()).isEqualTo(1);
+    }
+
+    @Test
     void tripsSeenFewerThanTenTimesAreLeftOut() {
         var analysis = new DayAnalysis();
         for (int minute = 0; minute < 9; minute++) {

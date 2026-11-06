@@ -26,10 +26,31 @@ public class DayAnalysis {
             long tripUpdates, long tripUpdatesWithoutStartDate,
             long stopUpdates, long stopUpdatesWithoutSequence,
             long passedObservations, long passedKept,
-            long settledStops, long settledStopsChanged) {
+            long settledStops, long settledStopsChanged,
+            Moves moves) {
 
         public double share(long part, long whole) {
             return whole == 0 ? 0 : (double) part / whole;
+        }
+    }
+
+    public record Moves(
+            long settledStops, long moved, long movedLater, long withinMinute,
+            long departureStops, long departureClose,
+            long[] laterBySize, long[] earlierBySize) {
+
+        static final long[] SIZE_LIMITS = {60, 120, 300, 900};
+
+        public static Moves none() {
+            return new Moves(0, 0, 0, 0, 0, 0, new long[SIZE_LIMITS.length + 1], new long[SIZE_LIMITS.length + 1]);
+        }
+
+        static int sizeIndex(long seconds) {
+            int i = 0;
+            while (i < SIZE_LIMITS.length && seconds >= SIZE_LIMITS[i]) {
+                i++;
+            }
+            return i;
         }
     }
 
@@ -37,6 +58,8 @@ public class DayAnalysis {
         long time;
         boolean settledSeen;
         boolean settledChanged;
+        Long atDeparture;
+        Long settled;
     }
 
     private static final class TripState {
@@ -52,6 +75,9 @@ public class DayAnalysis {
     private long polls, ok, notModified, failed, stale, receivedBytes;
     private long tripUpdates, withoutStartDate, stopUpdates, withoutSequence;
     private long passedObservations, passedKept, settledStops, settledChanged;
+    private long moveStops, moved, movedLater, withinMinute, departureStops, departureClose;
+    private final long[] laterBySize = Moves.none().laterBySize();
+    private final long[] earlierBySize = Moves.none().earlierBySize();
     private Instant lastFreshAt;
     private Optional<Instant> lastFeedTimestamp = Optional.empty();
     private Duration longestWithoutFresh = Duration.ZERO;
@@ -73,7 +99,9 @@ public class DayAnalysis {
         forgetTripsBefore(Instant.MAX);
         return new Report(polls, ok, notModified, failed, stale, longestWithoutFresh, receivedBytes,
                 tripUpdates, withoutStartDate, stopUpdates, withoutSequence,
-                passedObservations, passedKept, settledStops, settledChanged);
+                passedObservations, passedKept, settledStops, settledChanged,
+                new Moves(moveStops, moved, movedLater, withinMinute, departureStops, departureClose,
+                        laterBySize.clone(), earlierBySize.clone()));
     }
 
     private void countPoll(ArchivedSnapshot snapshot, Instant now) {
@@ -156,7 +184,14 @@ public class DayAnalysis {
                     state.settledChanged = true;
                 }
             }
-            state.time = entry.getValue();
+            long time = entry.getValue();
+            state.time = time;
+            if (state.atDeparture == null && time < nowSeconds) {
+                state.atDeparture = time;
+            }
+            if (state.settled == null && time + SETTLED_SECONDS < nowSeconds) {
+                state.settled = time;
+            }
         }
     }
 
@@ -175,10 +210,38 @@ public class DayAnalysis {
                                 settledChanged++;
                             }
                         }
+                        countMove(stop);
                     }
                 }
                 it.remove();
             }
+        }
+    }
+
+    private void countMove(StopState stop) {
+        if (stop.atDeparture != null) {
+            departureStops++;
+            if (Math.abs(stop.time - stop.atDeparture) < 120) {
+                departureClose++;
+            }
+        }
+        if (stop.settled == null) {
+            return;
+        }
+        moveStops++;
+        long move = stop.time - stop.settled;
+        if (Math.abs(move) < 60) {
+            withinMinute++;
+        }
+        if (move == 0) {
+            return;
+        }
+        moved++;
+        if (move > 0) {
+            movedLater++;
+            laterBySize[Moves.sizeIndex(move)]++;
+        } else {
+            earlierBySize[Moves.sizeIndex(-move)]++;
         }
     }
 
