@@ -1,6 +1,6 @@
 # 0002: How far passed stops still move
 
-Status: predictions written · 2026-11-06. No analysis done yet.
+Status: predictions written · 2026-11-06. Results added 2026-11-06.
 
 ## Why
 
@@ -43,4 +43,35 @@ If a prediction is wrong, I write down why I think it was, and I don't change th
 
 ## Results
 
-Not done yet.
+I ran `make analyse` on the archive for 4 November, after committing the code.
+
+That day had a problem I hadn't planned for. Production had no new data from 05:41 to 10:24 UTC, almost five hours of the morning, on top of the usual gaps in the evening. 27.7% of polls were stale, and VBB's news feed doesn't mention it. Trips running in that window are missing, which is why the counts are smaller than on 2 November.
+
+- P1 right. 11.36% of 951,615 settled stops moved.
+- P2 wrong, narrowly. 89.91% moved less than 60 seconds.
+- P3 wrong. 65.99% of the 108,146 moves went later.
+- P4 right, narrowly. For 85.37% of stops, the last value was within 2 minutes of the value at departure.
+
+Two right, two wrong. Moves by size, later / earlier:
+- under 1 min: 6,648 / 5,450
+- 1–2 min: 29,951 / 15,492
+- 2–5 min: 22,494 / 10,984
+- 5–15 min: 7,816 / 3,883
+- over 15 min: 4,453 / 975
+
+Because of the outage I also ran the same analysis on 2 November. It isn't part of the predictions and doesn't change the verdicts above. That day 9.15% moved, 92.23% moved less than 60 seconds, 69.07% of moves went later, and 87.19% were close to the value at departure. P2 would have been right there, but the picture is the same on both days.
+
+0001 counted a stop as changed if its value changed at any point after it settled. Here I only compare the last value with the settled one, so 2 November shows 9.15% here and 11.56% in 0001.
+
+## Why the wrong ones were wrong
+
+P3: I thought trains running later than their forecast would make up nearly all moves. They make up two thirds. The rest go earlier, so something also corrects times in the other direction after the fact.
+
+P2 and the sizes: I expected the moves to be mostly seconds. They're mostly 1–5 minutes, and under a minute is one of the smallest groups. My guess is that the feed replaces its forecast with a reported actual time a few minutes after departure. I haven't checked that.
+
+## What this changes
+
+- The last value isn't a clean real departure time. About one stop in ten still moves by a minute or more after it has settled, and a few thousand a day by more than 15 minutes.
+- Phase 2 can still use the last value as its label, but I shouldn't claim more than about a minute of precision, and I'll report how many labels moved late.
+- Which value is closest to what really happened can't be answered from the feed alone.
+- Whole mornings can be missing. Days with long gaps have to be marked as such, not used as if they were complete.
